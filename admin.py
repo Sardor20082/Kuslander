@@ -1,9 +1,12 @@
+import os
+import sqlite3
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from languages import LANGS
+from handlers import USER_LANG
 from utils import get_user_count
-from languages import LANGS, USER_LANG
 
-ADMIN_ID = int(os.environ.get("ADMIN_ID", "123456"))  # o‘zingiz o‘rnating
+ADMIN_ID = int(os.environ.get("ADMIN_ID", "123456"))
 
 async def handle_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
