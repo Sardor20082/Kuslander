@@ -1,19 +1,17 @@
 from flask import Flask, request
-from telegram import Update
-import os
+from telegram.ext import Application
 
 flask_app = Flask(__name__)
-application = None  # bu global o‘zgaruvchi bo‘ladi
+application: Application = None  # bu global o'zgaruvchi
 
-def setup_webhook(app_obj, flask_app_obj, webhook_url):
+def setup_webhook(app: Application, flask_app: Flask, webhook_url: str):
     global application
-    application = app_obj
-    flask_app_obj.add_url_rule('/', 'webhook', webhook_handler, methods=["POST"])
-    flask_app_obj.before_first_request(lambda: application.bot.set_webhook(url=webhook_url))
+    application = app
+    application.bot.set_webhook(webhook_url)
 
-async def webhook_handler():
+@flask_app.route("/", methods=["POST"])
+def webhook_handler():
     if request.method == "POST":
-        data = request.get_json(force=True)
-        update = Update.de_json(data, application.bot)
-        await application.process_update(update)
-        return "ok", 200
+        update = application.bot._parse_webhook_json(request.get_json(force=True))
+        application.update_queue.put_nowait(update)
+        return "OK", 200
